@@ -14,10 +14,16 @@ export default class App extends Component {
 
   state = {
     todoData:[
-      { label: 'Drink Coffee', important: false, id: this.itemId++ },
-      { label: 'Make Awesome App', important: true, id: this.itemId++ },
-      { label: 'Have a lunch', important: false, id: this.itemId++ }
+      this.getDefaultItem('Drink Coffee'),
+      this.getDefaultItem('Make Awesome App'),
+      this.getDefaultItem('Have a lunch')
     ]
+  }
+
+  getDefaultItem(label) {
+    return {
+      label: label, important: false, done: false, id: this.itemId++
+    }
   }
 
   deleteItem = (id) => {
@@ -35,15 +41,50 @@ export default class App extends Component {
     this.setState(({todoData}) => {
       return {
         todoData: [...todoData,
-          ...[{ label: text, important: false, id: this.itemId++ }]]
+          ...[this.getDefaultItem(text)]]
       };
     });
   }
 
+  changeProperty(arr, id, propName) {
+    const index = arr.findIndex((el) => el.id === id);
+
+    const oldItem = arr[index];
+    const newItem = {
+      ...oldItem, [propName]: !oldItem[propName]
+    };
+
+    return [...arr.slice(0, index),
+                  newItem,
+                  ...arr.slice(index+1)]
+    ;
+  }
+
+  setDoneMark = (id) => {
+    this.setState(({todoData}) => {
+     return {
+        todoData: this.changeProperty(todoData, id, "done")
+      };
+    });
+  }
+
+  setImportantMark = (id) => {
+    this.setState(({todoData}) => {
+      return {
+         todoData: this.changeProperty(todoData, id, "important")
+       };
+     });
+  }
+
   render() {
+    const {todoData} = this.state;
+
+    const doneCount = todoData.filter((el) => el.done).length;
+    const todoCount = todoData.length - doneCount;
+
     return (
       <div className="todo-app">
-        <AppHeader toDo={1} done={3} />
+        <AppHeader toDo={todoCount} done={doneCount} />
         <div className="top-panel d-flex">
           <SearchPanel />
           <ItemStatusFilter />
@@ -51,7 +92,9 @@ export default class App extends Component {
 
         <TodoList
           todos={this.state.todoData}
-          onDeleted={ this.deleteItem } />
+          onDeleted={ this.deleteItem }
+          onMarkImportant={ this.setImportantMark }
+          onLabelClick={ this.setDoneMark } />
 
           <div className="bottom-panel d-flex">
             <AddItem addItem={ this.addItem }/>
