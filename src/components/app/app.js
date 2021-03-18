@@ -11,6 +11,8 @@ import AddItem from "../add-item";
 export default class App extends Component {
 
   itemId = 0;
+  mode = 0; //0 - all, 1 - done, 2 - active
+  text = "";
 
   state = {
     todoData:[
@@ -22,7 +24,7 @@ export default class App extends Component {
 
   getDefaultItem(label) {
     return {
-      label: label, important: false, done: false, id: this.itemId++
+      label: label, isVisible: true, important: false, done: false, id: this.itemId++
     }
   }
 
@@ -66,6 +68,7 @@ export default class App extends Component {
         todoData: this.changeProperty(todoData, id, "done")
       };
     });
+    this.updateVisibleMode();
   }
 
   setImportantMark = (id) => {
@@ -74,6 +77,59 @@ export default class App extends Component {
          todoData: this.changeProperty(todoData, id, "important")
        };
      });
+  }
+
+  onSearchItems = (e) => {
+
+    this.text = e.target.value;
+
+    this.updateVisibleMode();
+  }
+
+  getVisibleConnectWithMode(arr) {
+      return arr.map((el) => {
+        if (!this.text.length || el.label.indexOf(this.text) + 1) {
+          switch (this.mode) {
+            default:
+            case 0:
+              el.isVisible = true;
+            break;
+            case 1:
+              (el.done) ? el.isVisible = true : el.isVisible = false;
+            break;
+            case 2:
+              (!el.done) ? el.isVisible = true : el.isVisible = false;
+            break;
+          }
+        } else {
+          el.isVisible = false;
+        }
+
+        return el;
+      });
+  }
+
+  updateVisibleMode() {
+    this.setState(({todoData}) => {
+      return {
+        todoData: this.getVisibleConnectWithMode(todoData)
+      }
+    });
+  }
+
+  showActiveItems = () => {
+    this.mode = 2;
+    this.updateVisibleMode();
+  }
+
+  showDoneItems = () => {
+    this.mode = 1;
+    this.updateVisibleMode();
+  }
+
+  showAllItems = () => {
+    this.mode = 0;
+    this.updateVisibleMode();
   }
 
   render() {
@@ -86,8 +142,12 @@ export default class App extends Component {
       <div className="todo-app">
         <AppHeader toDo={todoCount} done={doneCount} />
         <div className="top-panel d-flex">
-          <SearchPanel />
-          <ItemStatusFilter />
+          <SearchPanel onSearchItems={this.onSearchItems}/>
+          <ItemStatusFilter
+                  showActiveItems={this.showActiveItems}
+                  showAllItems={this.showAllItems}
+                  showDoneItems={this.showDoneItems}
+          />
         </div>
 
         <TodoList

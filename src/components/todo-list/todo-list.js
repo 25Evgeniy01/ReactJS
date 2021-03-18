@@ -6,10 +6,13 @@ import './todo-list.css';
 const TodoList = ({ todos, onDeleted, onLabelClick, onMarkImportant }) => {
 
   const elements = todos.map((item) => {
-    const { id, ...itemProps } = item;
+    const { id, isVisible, ...itemProps } = item;
 
+    let classNames = "list-group-item";
+
+    if (!isVisible) classNames += " d-none";
     return (
-      <li key={id} className="list-group-item">
+      <li key={id} className={classNames}>
         <TodoListItem {...itemProps }
           onDeleted = {() => {
               onDeleted(id)
