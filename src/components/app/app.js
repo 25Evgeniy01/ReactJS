@@ -88,7 +88,7 @@ export default class App extends Component {
 
   getVisibleConnectWithMode(arr) {
       return arr.map((el) => {
-        if (!this.text.length || el.label.indexOf(this.text) + 1) {
+        if (!this.text.length || el.label.toLowerCase().indexOf(this.text.toLowerCase()) + 1) {
           switch (this.mode) {
             default:
             case 0:
